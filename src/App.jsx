@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getRandomWord } from './words'
 import './App.css'
+import farewellMessages from './farewellMessages'
 
 export default function App() {
 
@@ -43,9 +44,8 @@ export default function App() {
 
   const alphabet = "abcdefghijklmnopqrstuvwxyz".split("")
   const isGameWon = letters.every(letter => guessedLetters.includes(letter))
-  const isGameLost = wrongGuessCount === languages.length
+  const isGameLost = wrongGuessCount === languages.length - 1
   const isGameOver = isGameWon || isGameLost
-  const gameStatusClass = isGameWon ? "game-status game-won" : isGameLost ? "game-status game-lost" : "game-status"
 
   const keyboardElements = alphabet.map((letter) => {
     const isGuessed = guessedLetters.includes(letter)
@@ -64,7 +64,17 @@ export default function App() {
     )
   })
 
+  const isLastGuessIncorrect = guessedLetters.length > 0 && !currentWord.includes(guessedLetters[guessedLetters.length - 1])
+  const lastEliminatedLanguage = languages[wrongGuessCount - 1]?.name
+  const showFarewellMessage = !isGameOver && isLastGuessIncorrect
 
+  const gameStatusClass = isGameWon ? "game-status game-won" : isGameLost ? "game-status game-lost" : showFarewellMessage ? "game-status farewell" : "game-status empty"
+  function getFarewellMessage(lastEliminatedLanguage) {
+    const randomIndex = Math.floor(Math.random() * farewellMessages.length)
+    const randomMessageTemplate = farewellMessages[randomIndex]
+    const randomFarwellMessage = randomMessageTemplate.replace("{language}", lastEliminatedLanguage)
+    return randomFarwellMessage
+  }
 
   function addGuessedLetter(letter) {
     setGuessedLetters((prev) => {
@@ -82,9 +92,17 @@ export default function App() {
     return (
       <main>
         <h1>Assembly: Endgame</h1>
+        <p className="subtitle">
+          Guess the word within 8 attempts to keep the programming world safe from assembly!
+        </p>
         <section className={gameStatusClass}>
           {isGameWon && <h2>You Win! 🎉 Well done!</h2>}
           {isGameLost && <h2>You Lose! 😢 The word was: {currentWord.toUpperCase()}</h2>}
+          {showFarewellMessage && (
+            <p className="farewell-text">
+              {getFarewellMessage(lastEliminatedLanguage)}
+            </p>
+          )}
         </section>
         <section className="languages-chips">
           {lang}
